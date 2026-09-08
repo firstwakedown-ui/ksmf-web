@@ -1,0 +1,215 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Administrace">
+  <h1>Administrace diskuze</h1>
+
+  <section id="login-panel">
+    <p>Přihlášení je určeno pouze pro moderátora.</p>
+    <form id="login-form">
+      <label for="email">E-mail</label>
+      <input id="email" name="email" type="email" required autocomplete="username" />
+
+      <label for="password">Heslo</label>
+      <input id="password" name="password" type="password" required autocomplete="current-password" />
+
+      <button type="submit">Přihlásit se</button>
+      <p id="login-result" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <section id="admin-panel" hidden>
+    <div class="admin-toolbar">
+      <h2>Moderace příspěvků</h2>
+      <button id="logout" type="button">Odhlásit se</button>
+    </div>
+    <p id="admin-result" role="status" aria-live="polite"></p>
+    <div id="admin-posts" class="notice">Načítám…</div>
+  </section>
+
+  <script>
+    import { supabase } from '../../lib/supabase';
+
+    const loginPanel = document.querySelector('#login-panel');
+    const adminPanel = document.querySelector('#admin-panel');
+    const loginForm = document.querySelector('#login-form');
+    const loginResult = document.querySelector('#login-result');
+    const adminResult = document.querySelector('#admin-result');
+    const adminPosts = document.querySelector('#admin-posts');
+    const logoutButton = document.querySelector('#logout');
+
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[character]);
+
+    const isAdmin = async (user) => {
+      if (!supabase || !user) return false;
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      return !error && Boolean(data);
+    };
+
+    const showLogin = (message = '') => {
+      loginPanel.hidden = false;
+      adminPanel.hidden = true;
+      loginResult.textContent = message;
+    };
+
+    const showAdmin = () => {
+      loginPanel.hidden = true;
+      adminPanel.hidden = false;
+    };
+
+    async function loadPosts() {
+      if (!supabase || !adminPosts) return;
+
+      const { data, error } = await supabase
+        .from('forum_posts')
+        .select('id, author, body, created_at, approved')
+        .order('approved', { ascending: true })
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        adminPosts.textContent = 'Příspěvky se nepodařilo načíst.';
+        return;
+      }
+
+      adminPosts.innerHTML = data?.map((post) => `
+        <article class="moderation-post">
+          <strong>${escapeHtml(post.author)}</strong>
+          <time datetime="${escapeHtml(post.created_at)}">${escapeHtml(new Intl.DateTimeFormat('cs-CZ', {
+            dateStyle: 'medium',
+            timeStyle: 'short'
+          }).format(new Date(post.created_at)))}</time>
+          <p>${escapeHtml(post.body).replace(/\n/g, '<br>')}</p>
+          <p class="state">${post.approved ? 'Schváleno' : 'Čeká na schválení'}</p>
+          <div class="actions">
+            ${post.approved
+              ? `<button type="button" data-action="hide" data-id="${post.id}">Skrýt</button>`
+              : `<button type="button" data-action="approve" data-id="${post.id}">Schválit</button>`}
+            <button type="button" data-action="delete" data-id="${post.id}">Smazat</button>
+          </div>
+        </article>
+      `).join('') || 'Žádné příspěvky.';
+    }
+
+    async function updatePost(id, approved) {
+      const { error } = await supabase
+        .from('forum_posts')
+        .update({ approved })
+        .eq('id', id);
+
+      if (error) {
+        adminResult.textContent = 'Příspěvek se nepodařilo upravit.';
+        return;
+      }
+
+      adminResult.textContent = approved ? 'Příspěvek schválen.' : 'Příspěvek skryt.';
+      await loadPosts();
+    }
+
+    async function deletePost(id) {
+      if (!confirm('Opravdu chceš tento příspěvek smazat?')) return;
+
+      const { error } = await supabase
+        .from('forum_posts')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        adminResult.textContent = 'Příspěvek se nepodařilo smazat.';
+        return;
+      }
+
+      adminResult.textContent = 'Příspěvek smazán.';
+      await loadPosts();
+    }
+
+    loginForm?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!supabase || !loginForm) {
+        loginResult.textContent = 'Chybí nastavení Supabase.';
+        return;
+      }
+
+      const formData = new FormData(loginForm);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: String(formData.get('email')).trim(),
+        password: String(formData.get('password'))
+      });
+
+      if (error) {
+        showLogin('Přihlášení se nepodařilo.');
+        return;
+      }
+
+      const { data } = await supabase.auth.getUser();
+      if (!(await isAdmin(data.user))) {
+        await supabase.auth.signOut();
+        showLogin('Tento účet nemá oprávnění administrátora.');
+        return;
+      }
+
+      showAdmin();
+      await loadPosts();
+    });
+
+    adminPosts?.addEventListener('click', async (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLButtonElement)) return;
+
+      const id = target.dataset.id;
+      const action = target.dataset.action;
+      if (!id) return;
+
+      target.disabled = true;
+      if (action === 'approve') await updatePost(id, true);
+      if (action === 'hide') await updatePost(id, false);
+      if (action === 'delete') await deletePost(id);
+      target.disabled = false;
+    });
+
+    logoutButton?.addEventListener('click', async () => {
+      await supabase?.auth.signOut();
+      showLogin('Byli jste odhlášeni.');
+    });
+
+    async function restoreSession() {
+      if (!supabase) {
+        showLogin('Chybí nastavení Supabase.');
+        return;
+      }
+
+      const { data } = await supabase.auth.getUser();
+      if (data.user && await isAdmin(data.user)) {
+        showAdmin();
+        await loadPosts();
+      } else {
+        showLogin();
+      }
+    }
+
+    restoreSession();
+  </script>
+</BaseLayout>
+
+<style>
+  form { max-width: 34rem; }
+  .admin-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .moderation-post { margin-top: 1rem; text-align: left; }
+  .moderation-post time { display: block; color: #654f22; font-size: .8rem; }
+  .state { font-weight: bold; }
+  .actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .actions button { width: auto; margin-top: 0; padding: .5rem .8rem; }
+  [hidden] { display: none !important; }
+  @media (max-width: 480px) {
+    .admin-toolbar { align-items: flex-start; flex-direction: column; }
+  }
+</style>

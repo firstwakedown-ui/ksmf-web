@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Přihláška">
+  <h1>Přihláška</h1>
+  <p>Vyplň prosím své jméno a e-mail. Poznámka je nepovinná.</p>
+
+  <form id="application" novalidate>
+    <div class="honeypot" aria-hidden="true">
+      <label for="website">Webová stránka</label>
+      <input id="website" name="website" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <label for="name">Jméno</label>
+    <input id="name" name="name" required minlength="2" maxlength="100" autocomplete="name" />
+
+    <label for="email">E-mail</label>
+    <input id="email" name="email" type="email" required maxlength="254" autocomplete="email" />
+
+    <label for="note">Poznámka <span class="optional">(nepovinné)</span></label>
+    <textarea id="note" name="note" maxlength="2000"></textarea>
+
+    <button type="submit">Odeslat přihlášku</button>
+    <p id="result" role="status" aria-live="polite"></p>
+  </form>
+
+  <script>
+    import { supabase } from '../../lib/supabase';
+
+    const form = document.querySelector('#application');
+    const result = document.querySelector('#result');
+    const button = form?.querySelector('button');
+
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!form || !result || !button) return;
+
+      if (!form.reportValidity()) return;
+
+      const data = new FormData(form);
+      if (String(data.get('website') ?? '').trim() !== '') return;
+
+      button.disabled = true;
+      button.textContent = 'Odesílám…';
+      result.textContent = '';
+
+      if (!supabase) {
+        result.textContent = 'Chybí nastavení Supabase.';
+        button.disabled = false;
+        button.textContent = 'Odeslat přihlášku';
+        return;
+      }
+
+      const { error } = await supabase.from('applications').insert({
+        name: String(data.get('name')).trim(),
+        email: String(data.get('email')).trim(),
+        note: String(data.get('note') ?? '').trim() || null
+      });
+
+      result.textContent = error
+        ? 'Přihlášku se nepodařilo uložit. Zkus to prosím znovu.'
+        : 'Děkujeme, přihláška byla uložena.';
+
+      if (!error) form.reset();
+      button.disabled = false;
+      button.textContent = 'Odeslat přihlášku';
+    });
+  </script>
+</BaseLayout>
+
+<style>
+  .optional { font-size: .85em; font-weight: normal; }
+  .honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+  button:disabled { opacity: .65; cursor: wait; }
+</style>

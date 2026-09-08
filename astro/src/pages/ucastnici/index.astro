@@ -1,0 +1,79 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Účastníci">
+  <h1>Účastníci</h1>
+  <p>
+    Tady se můžeš podívat, kdo už je přihlášený. Přes&nbsp;<a href="/diskuze/">diskuzi</a> se můžete domluvit třeba na společné cestě.
+  </p>
+
+  <div id="attendees" class="notice" aria-live="polite">Načítám seznam účastníků…</div>
+
+  <script>
+    import { supabase } from '../../lib/supabase';
+
+    const target = document.querySelector('#attendees');
+
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[character]);
+
+    const formatDate = (value) => new Intl.DateTimeFormat('cs-CZ', {
+      dateStyle: 'medium'
+    }).format(new Date(value));
+
+    if (!supabase) {
+      target.textContent = 'Chybí nastavení Supabase.';
+    } else {
+      const { data, error } = await supabase
+        .from('public_attendees')
+        .select('name, note, created_at')
+        .order('name', { ascending: true });
+
+      if (error) {
+        target.textContent = 'Seznam účastníků se nepodařilo načíst.';
+      } else if (!data?.length) {
+        target.textContent = 'Zatím není přihlášený žádný účastník.';
+      } else {
+        target.innerHTML = `
+          <div class="table-wrap">
+            <table class="attendee-table">
+              <caption class="visually-hidden">Seznam přihlášených účastníků</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Jméno</th>
+                  <th scope="col">Poznámka</th>
+                  <th scope="col">Přihlášen(a)</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${data.map((attendee) => `
+                  <tr>
+                    <th scope="row">${escapeHtml(attendee.name)}</th>
+                    <td>${attendee.note ? escapeHtml(attendee.note) : '<span class="muted">—</span>'}</td>
+                    <td><time datetime="${escapeHtml(attendee.created_at)}">${escapeHtml(formatDate(attendee.created_at))}</time></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+    }
+  </script>
+</BaseLayout>
+
+<style>
+  .table-wrap { overflow-x: auto; margin-top: 1rem; }
+  .attendee-table { width: 100%; min-width: 520px; border-collapse: collapse; background: var(--paper); font-size: .9rem; text-align: left; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .attendee-table th, .attendee-table td { padding: .62rem .75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .attendee-table thead th { color: var(--ink); background: color-mix(in srgb, var(--maroon) 9%, var(--paper)); font-size: .76rem; text-transform: uppercase; letter-spacing: .04em; }
+  .attendee-table tbody tr:hover { background: color-mix(in srgb, var(--maroon) 5%, var(--paper)); }
+  .attendee-table tbody th { color: var(--ink); }
+  .attendee-table time, .muted { color: color-mix(in srgb, var(--ink) 65%, transparent); font-size: .82rem; font-weight: normal; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+</style>

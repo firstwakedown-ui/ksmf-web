@@ -1,0 +1,110 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Diskuze">
+  <h1>Diskuze</h1>
+  <p class="forum-intro">Místo pro domluvu, dotazy a zprávy účastníků.</p>
+  <div id="posts" class="post-feed" aria-live="polite">Načítám schválené příspěvky…</div>
+  <nav class="pagination" aria-label="Stránkování diskuze">
+    <button id="previous" type="button" disabled>Předchozí</button>
+    <span id="page-info" aria-live="polite"></span>
+    <button id="next" type="button" disabled>Další</button>
+  </nav>
+  <section class="composer">
+    <h2>Nový příspěvek</h2>
+    <form id="post" novalidate>
+    <div class="honeypot" aria-hidden="true">
+      <label for="website">Webová stránka</label>
+      <input id="website" name="website" tabindex="-1" autocomplete="off" />
+    </div>
+    <label for="author">Jméno</label>
+    <input id="author" name="author" required minlength="2" maxlength="80" autocomplete="nickname" />
+    <label for="body">Příspěvek</label>
+    <textarea id="body" name="body" required minlength="2" maxlength="2000"></textarea>
+    <button type="submit">Přidat příspěvek</button>
+      <p id="result" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+  <script>
+    import { supabase } from '../../lib/supabase';
+    const posts = document.querySelector('#posts');
+    const form = document.querySelector('#post');
+    const result = document.querySelector('#result');
+    const button = form?.querySelector('button');
+    const previous = document.querySelector('#previous');
+    const next = document.querySelector('#next');
+    const pageInfo = document.querySelector('#page-info');
+    const pageSize = 8;
+    let page = 0;
+    let pageCount = 1;
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[character]);
+    const formatDate = (value) => new Intl.DateTimeFormat('cs-CZ', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+    async function load() {
+      if (!posts) return;
+      if (!supabase) { posts.textContent = 'Chybí nastavení Supabase.'; return; }
+      posts.setAttribute('aria-busy', 'true');
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+      const { data, count, error } = await supabase
+        .from('forum_posts')
+        .select('author,body,created_at', { count: 'exact' })
+        .eq('approved', true)
+        .order('created_at', { ascending: false })
+        .range(from, to);
+      posts.removeAttribute('aria-busy');
+      if (error) { posts.textContent = 'Příspěvky se nepodařilo načíst.'; return; }
+      pageCount = Math.max(1, Math.ceil((count ?? 0) / pageSize));
+      if (page >= pageCount) { page = pageCount - 1; return load(); }
+      posts.innerHTML = data?.length ? data.map((post) => `
+        <article class="post-card">
+          <div class="post-avatar" aria-hidden="true">${escapeHtml(String(post.author).trim().charAt(0).toUpperCase())}</div>
+          <div class="post-content">
+            <div class="post-meta"><strong>${escapeHtml(post.author)}</strong><time datetime="${escapeHtml(post.created_at)}">${escapeHtml(formatDate(post.created_at))}</time></div>
+            <p>${escapeHtml(post.body).replace(/\n/g, '<br>')}</p>
+          </div>
+        </article>
+      `).join('') : '<p class="empty-state">Zatím žádný schválený příspěvek.</p>';
+      if (pageInfo) pageInfo.textContent = `Stránka ${page + 1} z ${pageCount}`;
+      if (previous) previous.disabled = page === 0;
+      if (next) next.disabled = page >= pageCount - 1;
+    }
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!form || !result || !button) return;
+      if (!form.reportValidity()) return;
+      const data = new FormData(form);
+      if (String(data.get('website') ?? '').trim() !== '') return;
+      if (!supabase) { result.textContent = 'Chybí nastavení Supabase.'; return; }
+      button.disabled = true; button.textContent = 'Odesílám…'; result.textContent = '';
+      const { error } = await supabase.from('forum_posts').insert({ author: String(data.get('author')).trim(), body: String(data.get('body')).trim() });
+      result.textContent = error ? 'Příspěvek se nepodařilo odeslat. Zkus to prosím znovu.' : 'Příspěvek byl odeslán a čeká na schválení moderátorem.';
+      if (!error) { form.reset(); await load(); }
+      button.disabled = false; button.textContent = 'Přidat příspěvek';
+    });
+    previous?.addEventListener('click', async () => { if (page > 0) { page -= 1; await load(); } });
+    next?.addEventListener('click', async () => { if (page < pageCount - 1) { page += 1; await load(); } });
+    load();
+  </script>
+</BaseLayout>
+<style>
+  .forum-intro { margin-top: -.5rem; color: color-mix(in srgb, var(--ink) 68%, transparent); }
+  .post-feed { display: grid; gap: .65rem; min-height: 8rem; margin-top: 1rem; }
+  .post-card { display: flex; gap: .8rem; padding: .85rem 1rem; text-align: left; background: var(--paper); border: 1px solid var(--border); border-radius: 9px; box-shadow: 0 2px 8px rgb(24 48 67 / 5%); }
+  .post-avatar { flex: 0 0 2.1rem; display: grid; place-items: center; width: 2.1rem; height: 2.1rem; color: var(--paper); background: var(--maroon); border-radius: 50%; font-weight: bold; }
+  .post-content { min-width: 0; flex: 1; }
+  .post-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; }
+  .post-meta time { color: color-mix(in srgb, var(--ink) 58%, transparent); font-size: .78rem; font-weight: normal; }
+  .post-card p { margin: .35rem 0 0; overflow-wrap: anywhere; }
+  .empty-state { padding: 1rem; color: color-mix(in srgb, var(--ink) 65%, transparent); text-align: center; }
+  .pagination { display: flex; align-items: center; justify-content: center; gap: .8rem; margin: 1rem 0 1.5rem; }
+  .pagination button { width: auto; margin: 0; padding: .45rem .7rem; }
+  .pagination span { min-width: 7rem; color: color-mix(in srgb, var(--ink) 70%, transparent); text-align: center; font-size: .85rem; }
+  .composer { padding-top: 1rem; border-top: 1px solid var(--border); }
+  .composer h2 { margin-top: 0; font-size: 1.15rem; }
+  .composer form { margin-top: .75rem; }
+  .honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+  button:disabled { opacity: .65; cursor: wait; }
+  @media (max-width: 480px) { .post-card { padding: .75rem; } .post-avatar { flex-basis: 1.8rem; width: 1.8rem; height: 1.8rem; } }
+</style>

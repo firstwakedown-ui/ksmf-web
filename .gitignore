@@ -1,0 +1,26 @@
+database/ksmf.sqlite
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+**/.supabase-access-token
+
+# Dependencies and generated output
+**/node_modules/
+**/dist/
+**/.astro/
+
+# Supabase temporary files
+**/supabase/.temp/
+
+# Local assistant/editor configuration
+.continue/
+
+# Logs and operating-system files
+*.log
+.DS_Store
+Thumbs.db

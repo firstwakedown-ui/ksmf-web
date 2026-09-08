@@ -1,0 +1,309 @@
+a	{
+	font-weight: bold;
+	color: Maroon;
+}
+
+a:hover	{
+	text-decoration: none;	
+}
+
+body	{
+	margin-top: 0px;
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	background-color: rgb(255,255,204);
+        /*font-family: 'Homemade Apple';*/
+}
+
+fieldset	{
+	padding-left: 20px;
+	padding-bottom: 10px;
+	text-align: left;
+	width: 520px;
+}
+
+h1	{
+	font-size: large;
+	margin: 15px; 
+	text-align: center;
+        /*font-family: Miltonian;*/
+}
+
+h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+img {
+    border: none;
+}
+
+legend	{
+	color: Black;
+	padding-right: 5px;
+	font-size: 11px;
+	font-weight: bold;
+}
+
+.cerv {
+	color: red;
+}
+
+.anketa	{
+	border: solid 1px black;
+	float: right;
+	margin-left: 15px;
+	margin-bottom: 10px;
+	padding: 15px;
+	padding-bottom: 10px;
+	padding-top: 10px;
+	width: 160px;
+}
+
+.center	{
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.counter	{
+	margin-top: 100px;
+	font-size: 14px;
+}
+
+.d	{
+	white-space: nowrap;
+}
+
+.diskuze_cas	{
+	font-size: xx-small;
+}
+
+.formular	{
+	margin-left: 30px;
+	margin-bottom: 50px;
+}
+
+.inic	{
+	font-size: x-large;
+}
+
+.left	{
+	float: left;
+	width: 160px;
+	text-align: left;
+	padding: 10px;
+	border: solid 1px black;
+	line-height: 200%;
+	font-weight: bold;
+	background-color: #F3BF54 ; /*#F0A038;*/
+	padding-top: 20px;
+}
+
+.mensi	{
+	font-weight: normal;
+	font-size: 10px;
+}
+
+.menu_nad	{
+	display: none;
+    
+    padding-top: 5px;
+	padding-bottom: 10px;
+	text-align: center;
+	font-weight: bold;
+	font-size: 14px;
+}
+
+/*.nadpis	{
+	width: 768px;
+	margin-left: auto;
+	margin-right: auto;
+	background-image: url(logo09.jpg);
+	height: 127px;
+	border: 1px solid black;
+	margin-top: 10px;
+  margin-bottom: 15px;
+
+}
+  */
+
+body {
+    padding-top: 152px;
+    /*background: rgb(255, 255, 204) url(logo2010c.jpg) no-repeat top center; */
+    background: rgb(255, 255, 204) url(ksmflogo2023.jpg) no-repeat top center;
+}  
+
+.odkazy	{
+/*	margin-bottom: 50px;*/
+	padding-left: 20px;
+	line-height: 200%;
+}
+
+.odkazy li {
+  margin-left: 15px;
+}
+
+.seznam	{
+	margin-top: 15px;
+	//margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 15px;
+}
+
+.seznam_admin	{
+	margin-top: 15px;
+	margin-left: 20px;
+	margin-bottom: 15px;
+}
+
+
+.seznam td, .seznam_admin td	{
+	padding: 3px 2px;
+    padding-right: 20px;
+    text-align: left;
+}
+
+.seznam th {
+    text-align: left;
+}
+
+.skryt	{
+	display: none;
+}
+
+.stred	{
+	border: solid 1px;
+	margin-left: 195px;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 0px;
+	padding-bottom: 20px;
+	text-align: justify;
+	background-color: #ffed84;
+	background: #ffed84 url(roh2023.jpg) no-repeat top right;
+}
+
+.tab_prihl {
+	border-collapse: collapse;
+}
+
+.tab_prihl td	{
+	padding: 5px;
+	border: 0px solid red;
+}
+
+.tab_prihl td.vycpavka	{
+	height: 15px;
+	border: 0px solid;
+}
+
+.telo	{
+	width: 782px;
+	padding-top: 0px;
+	margin-bottom: 50px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.telo1	{
+	padding-top: 0px;
+	margin-bottom: 50px;
+	width: 2400px;
+}
+
+
+.telo div	{
+/*	background-color: #DFEFFF;*/
+	/*background-color: #FFF88F;*/
+	 /*#FFF2A8*/ /*#FFEEA8 */   /*#FFE7A8*/    /*#E0D4C0*/
+}
+
+.telo1 div 	{
+	/*background-color: #F0A038; /*#FFF2A8*/
+}
+
+.text	{
+	line-height: 150%;
+}
+
+.vzkaz	{
+	font-size: 90%; 
+	font-weight: normal;
+	text-align: justify;
+	border: 1px solid gray;
+	padding: 15px;
+	padding-left: 10px;
+	margin-bottom: 10px;
+}
+
+.manzel {
+	color: white;
+}
+
+
+iframe {
+	display: block;
+	margin: 30px 0;
+}
+
+.hint {
+    font-size: 80%;
+}
+
+ul {
+    padding: 5px;
+    margin: 0px;
+}
+
+ul.menu li {
+    list-style-type: none;
+}
+
+ul.procksmf {
+    margin-left: 10px;
+}
+
+ul.procksmf li {
+    margin-bottom: 10px;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+h1 .seven {
+    font-size: 250%;
+    color: black;
+    position: relative;
+    top: 10px;
+    font-family: 'Leckerli One', cursive;
+    padding-left: 10px;
+}
+
+.striked {
+    text-decoration: line-through;
+}
+
+tr.condense td{
+	padding: 0
+}
+
+tr.condense td.left-border{
+	padding-left: 5px;
+}
+
+tr.header{
+	font-weight: bold;
+}
+td.header{
+	font-weight: bold;
+}
+
+td.flush-right{
+	text-align: right;
+	padding-right: 10px !important;
+}
+
+td.left-border{
+	border-left: 1px solid black;
+}

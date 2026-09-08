@@ -1,0 +1,110 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Kroměřížská">
+  <h1>Kroměřížská <span>2026</span> bude!</h1>
+
+  <h3>Mezigenerační setkání účastníků a organizátorů ŠMF</h3>
+  <p>
+    KŠMF, známá také jako Kroměřížská, je neoficiální sraz účastníků minulých i současných.
+    Její mnohaletá tradice od roku 2005 umožňuje setkání ŠMFáků od studentů středních škol,
+    přes matfyzáky až po pracující.
+  </p>
+
+  <h3>Příjemná dovolená</h3>
+  <p>
+    Formou společenských her podporujeme příjemné prostředí pro všechny naše účastníky.
+    Program je nenucený, ale každý z nás jistě sem tam ocení, když ho někdo „vytáhne ven“.
+    V prodlouženém víkendu ti naservírujeme krásné město Kroměříž, zámecké zahrady,
+    deskovky, šarády a spoustu příjemných lidí.
+  </p>
+
+  <h3>Akce je pro všechny ŠMFáky</h3>
+  <p>
+    Jsme sraz bývalých účastníků a organizátorů ŠMF. Věk, zvyky ani jakákoli jiná odlišnost
+    pro nás nejsou důvodem, aby u nás kdokoli nebyl vítán. Jsme otevření nové společnosti
+    a nekoušeme.
+  </p>
+
+  <hr />
+  <section>
+    <h2>Informace</h2>
+    <div id="info" class="notice">Načítám aktuální informace…</div>
+  </section>
+
+  <hr />
+  <section>
+    <h2>Co s sebou?</h2>
+    <p>
+      Klasickou ŠMF výbavu, zdůrazníme snad jen šátek, bábovku nebo buchtu,
+      <strong>přezůvky</strong> a spacák. Nezapomeň na bábovku. Karimatek netřeba,
+      máme karimatrace.
+    </p>
+  </section>
+
+  <hr />
+  <section class="food-section">
+    <h2>Jídlo</h2>
+    <a class="food-photo" href="/fotky/jidlobig.jpg" target="_blank" rel="noreferrer">
+      <img src="/fotky/jidlo.jpg" alt="Ukázka jídla na Kroměřížské" loading="lazy" decoding="async" />
+    </a>
+    <p>
+      Snídaně budou formou chleba plus něco na něj, pravděpodobně také pomazánky.
+      Obědy budou nejspíš domluvené v restauraci a o večeře se postará Mára.
+    </p>
+    <div class="clear"></div>
+  </section>
+
+  <hr />
+  <p class="welcome"><strong>Těšíme se na Tebe v Kroměříži!</strong></p>
+  <p>Vaši orgové</p>
+
+  <script>
+    import { supabase } from '../lib/supabase';
+
+    const target = document.querySelector('#info');
+    if (target && !supabase) {
+      target.textContent = 'Doplňte připojení k Supabase v souboru .env.';
+    } else if (target && supabase) {
+      const { data, error } = await supabase
+        .from('event_info')
+        .select('venue, map_url, starts_at, ends_at, price_text')
+        .eq('id', 1)
+        .single();
+
+      if (error || !data) {
+        target.textContent = 'Aktuální informace se nepodařilo načíst.';
+      } else {
+        const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        })[character]);
+        const mapUrl = /^https?:\/\//i.test(data.map_url) ? data.map_url : '#';
+        target.innerHTML = `
+          <p><strong>Místo konání:</strong> ${escapeHtml(data.venue)} (<a href="${escapeHtml(mapUrl)}" target="_blank" rel="noreferrer">mapa</a>)</p>
+          <p><strong>Čas zahájení:</strong> ${escapeHtml(data.starts_at)}</p>
+          <p><strong>Čas ukončení:</strong> ${escapeHtml(data.ends_at)}</p>
+          <p><strong>Kolik to bude stát:</strong> ${escapeHtml(data.price_text)}</p>
+        `;
+      }
+    }
+  </script>
+</BaseLayout>
+
+<style>
+  h1 span { font-size: .8em; }
+  .welcome { font-size: 1.15rem; }
+  section { margin: 1.5rem 0; }
+  .notice p { margin: .5rem 0; }
+  .food-photo { float: left; display: block; margin: 0 1rem .6rem 0; }
+  .food-photo img { display: block; width: min(220px, 40vw); height: auto; border: 1px solid #8a681b; }
+  .food-photo:hover img, .food-photo:focus-visible img { opacity: .85; }
+  .clear { clear: both; }
+  @media (max-width: 480px) {
+    .food-photo { float: none; margin: 0 0 1rem; }
+    .food-photo img { width: 100%; max-width: 320px; }
+  }
+</style>
