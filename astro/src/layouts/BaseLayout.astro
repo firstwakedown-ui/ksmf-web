@@ -14,32 +14,33 @@ const currentPath = Astro.url.pathname;
   </head>
   <body>
     <a class="skip-link" href="#main-content">Přejít na hlavní obsah</a>
-    <div class="page">
-      <header class="site-header">
-        <a class="logo" href="/" aria-label="KŠMF – úvodní stránka">
-          <img src="/ksmflogo2023.jpg" alt="KŠMF" />
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <div class="nav-shell">
+        <a class="brand" href="/" aria-label="KŠMF – úvodní stránka">
+          <img class="brand-logo" src="/ksmflogo2023.jpg" alt="KŠMF – Kroměřížská škola matematiky a fyziky" width="1189" height="215" decoding="async" />
         </a>
+        <nav aria-label="Hlavní navigace">
+          <a class:list={{ active: currentPath === '/' }} aria-current={currentPath === '/' ? 'page' : undefined} href="/">O akci</a>
+          <a class:list={{ active: currentPath.startsWith('/prihlaska') }} aria-current={currentPath.startsWith('/prihlaska') ? 'page' : undefined} href="/prihlaska/">Přihláška</a>
+          <a class:list={{ active: currentPath.startsWith('/ucastnici') }} aria-current={currentPath.startsWith('/ucastnici') ? 'page' : undefined} href="/ucastnici/">Účastníci</a>
+          <a class:list={{ active: currentPath.startsWith('/diskuze') }} aria-current={currentPath.startsWith('/diskuze') ? 'page' : undefined} href="/diskuze/">Diskuze</a>
+          <a class:list={{ active: currentPath.startsWith('/odkazy') }} aria-current={currentPath.startsWith('/odkazy') ? 'page' : undefined} href="/odkazy/">Odkazy</a>
+        </nav>
         <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Přepnout tmavý režim" aria-pressed="false">
-          <span aria-hidden="true">◐</span>
-          <span class="theme-label">Tmavý režim</span>
+          <span aria-hidden="true">◐</span><span class="theme-label">Tmavý režim</span>
         </button>
-      </header>
-      <div class="site-body">
-        <aside class="sidebar">
-          <h2>Menu</h2>
-          <nav aria-label="Hlavní navigace">
-            <a class:list={{ active: currentPath === '/' }} aria-current={currentPath === '/' ? 'page' : undefined} href="/">Úvodní stránka</a>
-            <a class:list={{ active: currentPath.startsWith('/prihlaska') }} aria-current={currentPath.startsWith('/prihlaska') ? 'page' : undefined} href="/prihlaska/">Přihláška</a>
-            <a class:list={{ active: currentPath.startsWith('/diskuze') }} aria-current={currentPath.startsWith('/diskuze') ? 'page' : undefined} href="/diskuze/">Diskuzní fórum</a>
-            <a class:list={{ active: currentPath.startsWith('/ucastnici') }} aria-current={currentPath.startsWith('/ucastnici') ? 'page' : undefined} href="/ucastnici/">Účastníci</a>
-            <a class:list={{ active: currentPath.startsWith('/odkazy') }} aria-current={currentPath.startsWith('/odkazy') ? 'page' : undefined} href="/odkazy/">Odkazy</a>
-          </nav>
-          <p class="small">Dotazy? Napiš nám:<br /><a href="mailto:kromerizska@gmail.com">kromerizska@gmail.com</a></p>
-        </aside>
-        <main id="main-content" class="content"><slot /></main>
       </div>
-      <footer>Kroměřížská škola matematiky a fyziky</footer>
-    </div>
+    </header>
+
+    <main id="main-content" class="content"><slot /></main>
+
+    <footer>
+      <span>© Kroměřížská škola matematiky a fyziky</span>
+      <a href="mailto:kromerizska@gmail.com">kromerizska@gmail.com</a>
+    </footer>
     <script is:inline>
       const toggle = document.querySelector('#theme-toggle');
       const root = document.documentElement;
@@ -138,5 +139,115 @@ footer { padding: 1rem; text-align: center; font-size: .75rem; color: #654f22; }
   .sidebar nav a { padding: .35rem .5rem; }
   .small { margin: 1rem 0 0; }
   .content { padding: 0 15px 22px; }
+}
+</style>
+
+<style is:global>
+/* Modern redesign layer */
+:root {
+  --ink: #182230;
+  --brown: #111827;
+  --maroon: #6366f1;
+  --gold: #eef2ff;
+  --yellow: #ffffff;
+  --paper: #ffffff;
+  --page-bg: #f5f7fb;
+  --border: #e2e8f0;
+  --muted: #64748b;
+  --accent: #6366f1;
+  --accent-strong: #4f46e5;
+  --accent-soft: #eef2ff;
+  --surface-raised: rgb(255 255 255 / 82%);
+  --shadow: 0 18px 50px rgb(15 23 42 / 8%);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --ink: #e5edf7;
+  --brown: #f8fafc;
+  --maroon: #a5b4fc;
+  --gold: #202943;
+  --yellow: #151d2b;
+  --paper: #1b2535;
+  --page-bg: #0b1120;
+  --border: #2b374b;
+  --muted: #94a3b8;
+  --accent: #818cf8;
+  --accent-strong: #a5b4fc;
+  --accent-soft: #242b4b;
+  --surface-raised: rgb(27 37 53 / 82%);
+  --shadow: 0 20px 60px rgb(0 0 0 / 28%);
+  color-scheme: dark;
+}
+html { min-height: 100%; background: var(--page-bg); scroll-behavior: smooth; }
+body {
+  min-height: 100vh;
+  color: var(--ink);
+  background-color: var(--page-bg);
+  background-image:
+    linear-gradient(rgb(245 247 251 / 58%), rgb(245 247 251 / 72%)),
+    url('/kromeriz-background.webp');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+:root[data-theme="dark"] body {
+  background-image:
+    linear-gradient(rgb(11 17 32 / 62%), rgb(11 17 32 / 78%)),
+    url('/kromeriz-background.webp');
+}
+body::before { content: ""; position: fixed; inset: 0; z-index: -3; background: radial-gradient(circle at 12% 0%, rgb(99 102 241 / 12%), transparent 28rem), radial-gradient(circle at 92% 18%, rgb(14 165 233 / 9%), transparent 25rem); pointer-events: none; }
+.ambient { position: fixed; z-index: -2; width: 22rem; height: 22rem; border-radius: 50%; filter: blur(90px); opacity: .16; pointer-events: none; }
+.ambient-one { top: 5rem; left: -10rem; background: #6366f1; }
+.ambient-two { right: -10rem; bottom: 4rem; background: #06b6d4; }
+a { color: var(--accent-strong); text-underline-offset: .18em; }
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid rgb(99 102 241 / 30%); outline-offset: 2px; }
+.site-header { position: sticky; top: 0; z-index: 20; display: block; min-height: 0; padding: 0; overflow: visible; background: color-mix(in srgb, var(--page-bg) 78%, transparent); border: 0; border-bottom: 1px solid var(--border); border-radius: 0; box-shadow: none; backdrop-filter: blur(18px); }
+.nav-shell { width: min(1160px, calc(100% - 32px)); margin: 0 auto; padding: 1rem 0 .7rem; display: flex; flex-wrap: wrap; align-items: center; gap: .7rem 1.5rem; }
+.brand { display: block; flex: 0 0 100%; width: 100%; color: var(--ink); text-decoration: none; }
+.brand-logo { display: block; width: 100%; height: auto; object-fit: contain; border-radius: .45rem; }
+.brand:hover .brand-logo { opacity: .92; }
+.site-header nav { display: flex; align-items: center; gap: .25rem; margin-left: 0; }
+.site-header nav a { padding: .48rem .68rem; color: var(--muted); border-radius: .55rem; text-decoration: none; font-size: .86rem; font-weight: 650; transition: color .18s ease, background .18s ease; }
+.site-header nav a:hover, .site-header nav a:focus-visible { color: var(--ink); background: var(--accent-soft); }
+.site-header nav a.active { color: var(--accent-strong); background: var(--accent-soft); }
+.theme-toggle { display: inline-flex; align-items: center; gap: .4rem; flex: 0 0 auto; width: auto; margin: 0 0 0 auto; padding: .46rem .65rem; color: var(--muted); background: var(--paper); border: 1px solid var(--border); border-radius: .6rem; box-shadow: 0 2px 8px rgb(15 23 42 / 5%); font-size: .78rem; }
+.theme-toggle:hover, .theme-toggle:focus-visible { color: var(--ink); background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); }
+.content { width: min(1040px, calc(100% - 32px)); min-height: calc(100vh - 165px); margin: 2.2rem auto; padding: clamp(1.4rem, 3.5vw, 3rem); text-align: left; background: var(--surface-raised); background-image: none; border: 1px solid var(--border); border-radius: 1.25rem; box-shadow: var(--shadow); backdrop-filter: blur(16px); }
+h1 { margin: 0 0 1.6rem; color: var(--brown); text-align: left; font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.08; letter-spacing: -.04em; }
+h2 { margin-top: 1.8rem; color: var(--brown); font-size: 1.25rem; letter-spacing: -.02em; }
+h3 { margin-top: 1.55rem; color: var(--brown); font-size: 1.05rem; }
+p { max-width: 74ch; }
+hr { margin: 2rem 0; border-top-color: var(--border); }
+.notice, article { padding: 1rem 1.1rem; color: var(--ink); background: var(--paper); border: 1px solid var(--border); border-left: 1px solid var(--border); border-radius: .8rem; box-shadow: 0 5px 18px rgb(15 23 42 / 5%); }
+label { margin-top: .9rem; color: var(--ink); font-size: .84rem; }
+input, textarea { padding: .68rem .78rem; color: var(--ink); background: var(--paper); border: 1px solid var(--border); border-radius: .65rem; transition: border-color .18s ease, box-shadow .18s ease; }
+input:focus, textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgb(99 102 241 / 15%); }
+button { width: auto; padding: .65rem .9rem; color: #fff; background: var(--accent); border: 1px solid var(--accent); border-radius: .65rem; box-shadow: 0 7px 18px rgb(79 70 229 / 17%); font-size: .84rem; transition: transform .18s ease, background .18s ease; }
+button:hover, button:focus-visible { background: var(--accent-strong); transform: translateY(-1px); }
+button:disabled { transform: none; }
+footer { width: min(1040px, calc(100% - 32px)); margin: 0 auto; padding: 0 0 2rem; display: flex; justify-content: space-between; gap: 1rem; color: var(--muted); font-size: .76rem; }
+footer a { font-weight: 600; }
+@media (max-width: 800px) {
+  .nav-shell { padding: .65rem 0; gap: .55rem 1rem; }
+  .brand { order: 1; }
+  .site-header nav { order: 3; width: 100%; overflow-x: auto; padding-bottom: .1rem; }
+  .site-header nav a { white-space: nowrap; }
+  .theme-toggle { order: 2; margin-left: auto; }
+  .content { margin-top: 1rem; }
+}
+@media (max-width: 520px) {
+  body { background-attachment: scroll; }
+  .nav-shell, .content, footer { width: min(100% - 20px, 1040px); }
+  .brand { flex-basis: 100%; }
+  .brand-logo { width: 100%; }
+  .theme-label { display: none; }
+  .content { padding: 1.15rem; border-radius: .9rem; }
+  .site-header nav { gap: .1rem; }
+  .site-header nav a { padding: .4rem .52rem; font-size: .8rem; }
+  footer { flex-direction: column; gap: .25rem; }
 }
 </style>
